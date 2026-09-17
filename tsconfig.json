@@ -1,13 +1,9 @@
 {
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "commonjs",
-    "lib": ["ES2022"],
     "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
+    "jsx": "react-jsx",
     "types": ["jest", "node"]
   },
-  "include": ["src/**/*", "__tests__/**/*"]
+  "include": ["App.tsx", "index.js", "src/**/*", "__tests__/**/*"]
 }
