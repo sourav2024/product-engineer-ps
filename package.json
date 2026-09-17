@@ -1,0 +1,23 @@
+{
+  "name": "offline-incident-queue",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline-first incident queue — Caygnus product engineering challenge, problem 1",
+  "scripts": {
+    "server": "node server/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": ["**/__tests__/**/*.test.ts"]
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.4.0"
+  }
+}
