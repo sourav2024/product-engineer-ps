@@ -59,7 +59,7 @@ one incident. `npm run test:e2e` asserts precisely this sequence.
 ## Run the tests
 
 ```bash
-npm test         # 11 unit tests, ~0.8s, no device or simulator needed
+npm test         # 14 unit tests, ~1.3s, no device or simulator needed
 npm run typecheck
 
 # Optional end-to-end check against the real receiver process:
@@ -71,10 +71,11 @@ The unit tests run in plain Node against in-memory doubles. There are no sleeps,
 no real timers and no network, so they are deterministic and fast.
 
 `test:e2e` is separate and excluded from `npm test`, because it needs the server
-running. It drives the real HTTP transport through a forced 503, then a lost
-response, then a successful retry, and asserts the receiver holds exactly one
-record. Start the server with `SLOW_DELAY_MS=4000 npm run server` to keep it
-brisk.
+running. Two tests drive the real HTTP transport: one through a forced 503, a
+lost response and a successful retry; one reproducing the entire demo script
+(offline create → failed sync → app restart → retry → synced) and asserting the
+receiver holds exactly one record. Start the server with
+`SLOW_DELAY_MS=4000 npm run server` to keep the timeout case brisk.
 
 ## Architecture and data flow
 
@@ -154,6 +155,8 @@ stop at 5 attempts and hand control to the user, so the queue cannot spin foreve
 - Backoff is per-incident, not a global circuit breaker. With one endpoint and a
   small queue this is adequate; see below for what would change at scale.
 - No conflict resolution: incidents are append-only, so there is nothing to merge.
+- Verified on the iOS simulator (render, SQLite init, layout) and by driving the
+  real engine over real HTTP. Tap-level UI automation is not included.
 
 ## Production and scale
 
