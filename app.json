@@ -6,9 +6,18 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "ios": { "supportsTablet": true },
-    "android": { "package": "com.caygnus.offlineincidentqueue" },
-    "web": { "bundler": "metro" },
-    "plugins": ["expo-sqlite"]
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.caygnus.offlineincidentqueue"
+    },
+    "plugins": [
+      "expo-sqlite"
+    ],
+    "platforms": [
+      "ios",
+      "android"
+    ]
   }
 }
