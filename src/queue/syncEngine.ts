@@ -136,10 +136,23 @@ export class SyncEngine {
     }
   }
 
-  /** Force one incident back into the queue regardless of backoff. */
+  /**
+   * Force one incident back into the queue, ignoring backoff.
+   *
+   * Re-read immediately before writing, because a background flush may have
+   * moved this incident since the user tapped Retry. Anything already queued
+   * or in flight needs no nudge, so those states are a no-op rather than an
+   * error — a retry that races a flush must not reject in the UI.
+   */
   async retry(id: string): Promise<void> {
     const row = await this.storage.get(id);
-    if (!row || row.syncState === 'synced' || row.syncState === 'syncing') return;
+    if (!row) return;
+    if (row.syncState !== 'failed') {
+      // pending: already queued. syncing: an attempt is in flight.
+      // synced: terminal. In every case, flushing is the only useful action.
+      await this.flush();
+      return;
+    }
 
     await this.storage.put(transition(row, 'pending', { lastError: undefined }));
     await this.notify();
