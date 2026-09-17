@@ -45,6 +45,10 @@ function readBody(req) {
   });
 }
 
+/** Outlast the client's timeout so the response is never observed. */
+const SLOW_DELAY_MS = Number(process.env.SLOW_DELAY_MS || 15_000);
+const stall = () => new Promise((r) => setTimeout(r, SLOW_DELAY_MS));
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
 
@@ -76,13 +80,6 @@ const server = http.createServer(async (req, res) => {
       return json(res, 503, { error: 'forced failure (mode=fail)' });
     }
 
-    if (mode === 'slow') {
-      // Longer than the client's timeout: the request *does* land, but the
-      // client never hears back. This is the uncertain-outcome case that
-      // makes server-side idempotency necessary rather than merely tidy.
-      await new Promise((r) => setTimeout(r, 15_000));
-    }
-
     let body;
     try {
       body = await readBody(req);
@@ -100,6 +97,7 @@ const server = http.createServer(async (req, res) => {
     const existing = incidents.get(id);
     if (existing) {
       console.log(`[ingest] duplicate ${id} -> returning existing`);
+      if (mode === 'slow') await stall();
       return json(res, 200, { ...existing, duplicate: true });
     }
 
@@ -112,6 +110,12 @@ const server = http.createServer(async (req, res) => {
     };
     incidents.set(id, stored);
     console.log(`[ingest] stored ${id} (${incidents.size} total)`);
+
+    // The delay happens *after* the write, so `slow` reproduces the genuinely
+    // dangerous case: the incident is committed and the client never learns it.
+    // Delaying before the write would merely look like an unreachable server.
+    if (mode === 'slow') await stall();
+
     return json(res, 201, { ...stored, duplicate: false });
   }
 

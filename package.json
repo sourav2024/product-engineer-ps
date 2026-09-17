@@ -5,13 +5,14 @@
   "description": "Offline-first incident queue — Caygnus product engineering challenge, problem 1",
   "scripts": {
     "server": "node server/index.js",
-    "test": "jest",
+    "test": "jest --testPathIgnorePatterns integration",
     "test:watch": "jest --watch",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "jest __tests__/integration"
   },
   "jest": {
     "preset": "ts-jest",
