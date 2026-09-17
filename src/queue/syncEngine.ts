@@ -74,16 +74,17 @@ export class SyncEngine {
    * This is what makes retries idempotent at the server.
    */
   async create(input: NewIncidentInput): Promise<Incident> {
+    const title = input.title.trim();
+    if (!title) throw new Error('Title is required');
+
     const incident: Incident = {
       id: this.generateId(),
-      title: input.title.trim(),
+      title,
       severity: input.severity,
       createdAt: this.clock.now().toISOString(),
       syncState: 'pending',
       attempts: 0,
     };
-
-    if (!incident.title) throw new Error('Title is required');
 
     await this.storage.put(incident);
     await this.notify();

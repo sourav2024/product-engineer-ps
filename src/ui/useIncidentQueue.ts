@@ -10,6 +10,18 @@ import { SERVER_URL } from '../config';
 export type Connectivity = 'online' | 'offline' | 'unknown';
 
 /**
+ * Flush without letting a storage-level failure escape as an unhandled
+ * rejection. Transport errors are already recorded per incident by the engine;
+ * this catches the rarer case of the device itself failing to write, which
+ * should surface in the UI rather than crash it.
+ */
+function flushSafely(engine: SyncEngine | null, onError: (msg: string) => void): void {
+  engine?.flush().catch((err: unknown) => {
+    onError(err instanceof Error ? err.message : String(err));
+  });
+}
+
+/**
  * Binds the queue engine to React.
  *
  * The hook owns no synchronization logic of its own: it subscribes to engine
@@ -20,6 +32,7 @@ export function useIncidentQueue() {
   const [engine, setEngine] = useState<SyncEngine | null>(null);
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [connectivity, setConnectivity] = useState<Connectivity>('unknown');
+  const [error, setError] = useState<string | null>(null);
 
   const transport = useMemo(() => new HttpIncidentTransport(SERVER_URL), []);
 
@@ -56,23 +69,46 @@ export function useIncidentQueue() {
     return NetInfo.addEventListener((state) => {
       const online = Boolean(state.isConnected && state.isInternetReachable !== false);
       setConnectivity(online ? 'online' : 'offline');
-      if (online) void engine?.flush();
+      if (online) flushSafely(engine, setError);
     });
   }, [engine]);
 
   const create = useCallback(
     async (input: NewIncidentInput) => {
       if (!engine) return;
-      await engine.create(input);
-      void engine.flush(); // no-op offline; the attempt simply fails and retries
+      setError(null);
+      try {
+        await engine.create(input);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+        return;
+      }
+      flushSafely(engine, setError); // no-op offline; the attempt fails and retries
     },
     [engine],
   );
 
-  const retry = useCallback((id: string) => engine?.retry(id), [engine]);
-  const flush = useCallback(() => engine?.flush(), [engine]);
+  const retry = useCallback(
+    (id: string) => {
+      engine?.retry(id).catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : String(err));
+      });
+    },
+    [engine],
+  );
+
+  const flush = useCallback(() => flushSafely(engine, setError), [engine]);
 
   const pendingCount = incidents.filter((i) => i.syncState !== 'synced').length;
 
-  return { incidents, connectivity, pendingCount, ready: engine !== null, create, retry, flush };
+  return {
+    incidents,
+    connectivity,
+    pendingCount,
+    error,
+    ready: engine !== null,
+    create,
+    retry,
+    flush,
+  };
 }

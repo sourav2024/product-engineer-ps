@@ -3,12 +3,12 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useIncidentQueue } from './src/ui/useIncidentQueue';
 import { SEVERITIES, type Incident, type Severity } from './src/queue/types';
 
@@ -18,7 +18,16 @@ import { SEVERITIES, type Incident, type Severity } from './src/queue/types';
  * create an incident, see its sync state, retry a failure.
  */
 export default function App() {
-  const { incidents, connectivity, pendingCount, ready, create, retry, flush } = useIncidentQueue();
+  return (
+    <SafeAreaProvider>
+      <IncidentScreen />
+    </SafeAreaProvider>
+  );
+}
+
+function IncidentScreen() {
+  const { incidents, connectivity, pendingCount, error, ready, create, retry, flush } =
+    useIncidentQueue();
   const [title, setTitle] = useState('');
   const [severity, setSeverity] = useState<Severity>('high');
 
@@ -48,6 +57,8 @@ export default function App() {
       <Text style={styles.muted}>
         {pendingCount} awaiting sync · tap Sync now to force an attempt
       </Text>
+
+      {error ? <Text style={styles.banner}>{error}</Text> : null}
 
       <TextInput
         style={styles.input}
@@ -124,7 +135,7 @@ function stateStyle(incident: Incident) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, padding: 16, paddingTop: 56, backgroundColor: '#fff', gap: 8 },
+  screen: { flex: 1, paddingHorizontal: 16, paddingTop: 8, backgroundColor: '#fff', gap: 8 },
   centred: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   heading: { fontSize: 24, fontWeight: '700' },
@@ -146,6 +157,13 @@ const styles = StyleSheet.create({
   muted: { color: '#666', fontSize: 13 },
   id: { color: '#999', fontSize: 11, fontFamily: 'monospace' },
   error: { color: '#8a1c1c', fontSize: 13 },
+  banner: {
+    backgroundColor: '#fdecea',
+    color: '#8a1c1c',
+    padding: 8,
+    borderRadius: 6,
+    fontSize: 13,
+  },
   pending: { color: '#8a6d00', fontWeight: '600' },
   syncing: { color: '#1a237e', fontWeight: '600' },
   synced: { color: '#137333', fontWeight: '600' },
