@@ -168,6 +168,11 @@ export class SyncEngine {
     if (row.syncState === 'failed' && row.attempts < this.maxAutoAttempts) {
       if (!row.lastAttemptAt) return true;
       const elapsed = this.clock.now().getTime() - new Date(row.lastAttemptAt).getTime();
+      // A timestamp in the future (clock skew, or a device whose clock was
+      // wrong when the attempt was recorded) would otherwise leave the
+      // incident permanently un-due. Treat it as ready rather than stranding
+      // it in the queue for ever.
+      if (elapsed < 0) return true;
       return elapsed >= backoffMs(row.attempts);
     }
 

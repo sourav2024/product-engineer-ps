@@ -212,3 +212,39 @@ describe('state machine', () => {
     expect(backoffMs(99)).toBe(60_000);
   });
 });
+
+describe('clock skew', () => {
+  it('retries an incident whose lastAttemptAt is in the future', async () => {
+    const storage = new InMemoryIncidentStorage();
+    const sent: string[] = [];
+    const engine = new SyncEngine({
+      storage,
+      transport: {
+        send: async (i) => {
+          sent.push(i.id);
+          return { ok: true };
+        },
+      },
+    });
+
+    // A device with a skewed clock can record an attempt "in the future".
+    // Without a guard the elapsed time is negative and the incident is never
+    // due again — silently stranded, which is the one outcome this queue
+    // exists to prevent.
+    await storage.put({
+      id: 'skewed',
+      title: 'Future timestamp',
+      severity: 'high',
+      createdAt: new Date().toISOString(),
+      syncState: 'failed',
+      attempts: 1,
+      lastError: 'HTTP 503',
+      lastAttemptAt: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
+    });
+
+    await engine.flush();
+
+    expect(sent).toEqual(['skewed']);
+    expect((await engine.list())[0].syncState).toBe('synced');
+  });
+});
