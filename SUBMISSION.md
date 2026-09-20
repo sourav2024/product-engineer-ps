@@ -6,7 +6,7 @@
 - **Email:** sourav.kashyap@truxo.ai
 - **GitHub:** [sourav2024](https://github.com/sourav2024)
 - **Selected problem:** Problem 1 — Offline Mobile Queue
-- **Demo video:** _TODO: paste Loom/Drive link here before submitting, and verify it opens in a logged-out browser._
+- **Demo video:** https://drive.google.com/file/d/1O8OrHx3xvHDmFji43ql6JlzAlCqQrG-Z/view?usp=drive_link
 
 ## Run the project
 
