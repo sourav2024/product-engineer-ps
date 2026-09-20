@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Offline Incident Queue",
+    "slug": "offline-incident-queue",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.caygnus.offlineincidentqueue"
+    },
+    "plugins": [
+      "expo-sqlite"
+    ],
+    "platforms": [
+      "ios",
+      "android"
+    ]
+  }
+}
