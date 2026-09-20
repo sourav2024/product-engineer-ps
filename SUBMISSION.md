@@ -60,7 +60,7 @@ one incident. `npm run test:e2e` asserts precisely this sequence.
 ## Run the tests
 
 ```bash
-npm test         # 14 unit tests, ~1.3s, no device or simulator needed
+npm test         # 15 unit tests, ~1.5s, no device or simulator needed
 npm run typecheck
 
 # Optional end-to-end check against the real receiver process:
@@ -104,7 +104,7 @@ before sending, then records the outcome. The UI learns about all of it through
 
 The deliberate constraint: **`src/queue/` contains no React and no Expo imports**
 (except the one SQLite adapter). That is what lets the interesting logic be tested
-in 0.7 seconds without a simulator.
+in about a second without a simulator.
 
 ### State machine
 
@@ -123,7 +123,7 @@ key, and `INSERT OR REPLACE` on the client id gives local idempotency for free.
 AsyncStorage would have meant read-modify-write of a whole JSON blob, which is
 both slower and racy.
 
-**A real HTTP receiver** rather than an in-app mock. It costs ~120 dependency-free
+**A real HTTP receiver** rather than an in-app mock. It costs ~130 dependency-free
 lines and makes the duplicate-prevention claim demonstrable rather than merely
 asserted: the reviewer can query the store and count records.
 

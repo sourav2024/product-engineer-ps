@@ -14,7 +14,7 @@ unacceptable; retrying one must not create a duplicate. This prototype does both
 npm install
 npm run server   # terminal 1 — incident receiver on :4000
 npm start        # terminal 2 — Expo
-npm test         # 11 unit tests, no device needed
+npm test         # 15 unit tests, no device needed
 npm run test:e2e # optional: real HTTP, needs the server running
 ```
 
@@ -27,7 +27,8 @@ npm run test:e2e # optional: real HTTP, needs the server running
 | [src/queue/storage.ts](src/queue/storage.ts) · [transport.ts](src/queue/transport.ts) | The two boundaries that make it testable |
 | [server/index.js](server/index.js) | Receiver with forced-failure modes |
 | [__tests__/syncEngine.test.ts](__tests__/syncEngine.test.ts) | Tests named after the acceptance criteria |
-| [__tests__/integration/e2e.test.ts](__tests__/integration/e2e.test.ts) | Real HTTP: 503 → lost response → retry → one record |
+| [__tests__/concurrency.test.ts](__tests__/concurrency.test.ts) | Overlapping flushes, retry racing a background sync |
+| [__tests__/integration/](__tests__/integration/) | Real HTTP: 503 → lost response → retry → one record |
 
 `src/queue/` imports no React and no Expo (except the one SQLite adapter), so the
 logic worth testing runs in Node in under a second.
